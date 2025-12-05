@@ -4,14 +4,29 @@ import { WaveComposition, EnemyType, TowerEntity } from "../types";
 // Note: Using 'gemini-2.5-flash' for speed and responsiveness in a game loop context
 const MODEL_NAME = 'gemini-2.5-flash';
 
+// Safe access to process.env to prevent crashes in browsers/static hosts where process is undefined
+const getApiKey = (): string | undefined => {
+    try {
+        if (typeof process !== 'undefined' && process.env) {
+            return process.env.API_KEY;
+        }
+    } catch (e) {
+        // Ignore errors if process is not defined
+    }
+    return undefined;
+};
+
 const getClient = (): GoogleGenAI | null => {
-    const apiKey = process.env.API_KEY;
+    const apiKey = getApiKey();
     if (!apiKey) {
-        console.warn("API_KEY is not set. Switching to Offline Mode.");
         return null;
     }
     return new GoogleGenAI({ apiKey });
 }
+
+export const isAIOnline = (): boolean => {
+    return !!getApiKey();
+};
 
 const generateFallbackWave = (waveNumber: number): WaveComposition => {
     const enemies: WaveComposition['enemies'] = [];
@@ -58,7 +73,7 @@ const generateFallbackWave = (waveNumber: number): WaveComposition => {
     }
 
     return {
-        briefing: `[OFFLINE MODE] Wave ${waveNumber} sequence initiated. Local sensors tracking incoming hostiles.`,
+        briefing: `[OFFLINE PROTOCOL] Uplink lost. Wave ${waveNumber} generated via local sensors.`,
         enemies
     };
 };

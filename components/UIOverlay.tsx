@@ -1,7 +1,7 @@
 import React from 'react';
 import { GameState, TowerType } from '../types';
 import { TOWER_STATS } from '../constants';
-import { Shield, Zap, Crosshair, Hexagon, Activity, Play, BrainCircuit } from 'lucide-react';
+import { Shield, Zap, Crosshair, Hexagon, Activity, Play, BrainCircuit, Wifi, WifiOff } from 'lucide-react';
 
 interface UIOverlayProps {
     gameState: GameState;
@@ -11,6 +11,7 @@ interface UIOverlayProps {
     isWaveGenerating: boolean;
     waveBriefing: string;
     aiAdvice: string;
+    isOnline: boolean;
 }
 
 export const UIOverlay: React.FC<UIOverlayProps> = ({
@@ -20,15 +21,22 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
     startNextWave,
     isWaveGenerating,
     waveBriefing,
-    aiAdvice
+    aiAdvice,
+    isOnline
 }) => {
     return (
         <div className="flex flex-col h-[600px] w-[300px] bg-slate-900/90 border-l border-slate-700 p-4 text-slate-100 font-sci-fi relative overflow-hidden">
             {/* Header / Stats */}
             <div className="mb-6 space-y-2 border-b border-slate-700 pb-4">
-                <h1 className="text-2xl text-cyan-400 font-bold uppercase tracking-widest text-center mb-4">
-                    Neon Defense
-                </h1>
+                <div className="flex justify-between items-center mb-4">
+                    <h1 className="text-xl text-cyan-400 font-bold uppercase tracking-widest">
+                        Neon Defense
+                    </h1>
+                    <div className={`flex items-center text-xs px-2 py-1 rounded border ${isOnline ? 'border-green-800 bg-green-900/30 text-green-400' : 'border-red-800 bg-red-900/30 text-red-400'}`}>
+                        {isOnline ? <Wifi className="w-3 h-3 mr-1" /> : <WifiOff className="w-3 h-3 mr-1" />}
+                        {isOnline ? "ONLINE" : "OFFLINE"}
+                    </div>
+                </div>
                 
                 <div className="flex justify-between items-center bg-slate-800 p-2 rounded border border-slate-700">
                     <div className="flex items-center text-green-400">

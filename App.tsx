@@ -1,9 +1,9 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { GameCanvas } from './components/GameCanvas';
 import { UIOverlay } from './components/UIOverlay';
 import { GameState, TowerType, WaveComposition } from './types';
 import { INITIAL_MONEY, INITIAL_LIVES } from './constants';
-import { generateWave, getTacticalAdvice } from './services/geminiService';
+import { generateWave, getTacticalAdvice, isAIOnline } from './services/geminiService';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({
@@ -20,6 +20,12 @@ const App: React.FC = () => {
   const [isWaveGenerating, setIsWaveGenerating] = useState(false);
   const [waveBriefing, setWaveBriefing] = useState<string>("System online. Awaiting command.");
   const [aiAdvice, setAiAdvice] = useState<string>("");
+  const [isOnline, setIsOnline] = useState<boolean>(true);
+
+  // Check connection on mount
+  useEffect(() => {
+    setIsOnline(isAIOnline());
+  }, []);
 
   const startNextWave = useCallback(async () => {
     if (gameState.isPlaying || isWaveGenerating) return;
@@ -32,9 +38,6 @@ const App: React.FC = () => {
 
     try {
       // Parallel requests for speed: Wave Gen + Flavor Text
-      // Actually, better to sequence them or prioritize wave gen so game can start?
-      // Let's do parallel but wait for wave to start.
-      
       const waveData = await generateWave(nextWave, diffMod);
       
       setWaveComposition(waveData);
@@ -42,7 +45,7 @@ const App: React.FC = () => {
       setGameState(prev => ({ ...prev, wave: nextWave, isPlaying: true }));
       
       // Fire-and-forget advice generation to not block
-      getTacticalAdvice(nextWave, gameState.money, gameState.lives, []) // TODO: Pass actual towers if we lifted state up fully, but for now empty array is okay for first version or pass dummy.
+      getTacticalAdvice(nextWave, gameState.money, gameState.lives, []) 
           .then(advice => setAiAdvice(advice))
           .catch(() => {});
 
@@ -82,6 +85,7 @@ const App: React.FC = () => {
           isWaveGenerating={isWaveGenerating}
           waveBriefing={waveBriefing}
           aiAdvice={aiAdvice}
+          isOnline={isOnline}
         />
       </div>
     </div>
