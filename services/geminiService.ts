@@ -1,20 +1,75 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { WaveComposition, EnemyType, TowerType, TowerEntity } from "../types";
+import { WaveComposition, EnemyType, TowerEntity } from "../types";
 
 // Note: Using 'gemini-2.5-flash' for speed and responsiveness in a game loop context
 const MODEL_NAME = 'gemini-2.5-flash';
 
-const getClient = () => {
+const getClient = (): GoogleGenAI | null => {
     const apiKey = process.env.API_KEY;
     if (!apiKey) {
-        console.error("API_KEY is missing in environment variables");
-        throw new Error("API Key missing");
+        console.warn("API_KEY is not set. Switching to Offline Mode.");
+        return null;
     }
     return new GoogleGenAI({ apiKey });
 }
 
+const generateFallbackWave = (waveNumber: number): WaveComposition => {
+    const enemies: WaveComposition['enemies'] = [];
+    
+    // Simple procedural generation logic for offline mode
+    const difficultyMult = 1 + (waveNumber * 0.2);
+    
+    // Always spawn grunts
+    enemies.push({
+        type: EnemyType.grunt,
+        count: Math.floor(5 * difficultyMult),
+        interval: Math.max(20, 60 - waveNumber * 2),
+        hpMultiplier: difficultyMult
+    });
+
+    // Add scouts from wave 2
+    if (waveNumber >= 2) {
+        enemies.push({
+            type: EnemyType.SCOUT,
+            count: Math.floor(3 * difficultyMult),
+            interval: 40,
+            hpMultiplier: difficultyMult * 0.8
+        });
+    }
+
+    // Add tanks from wave 4, every 2 waves
+    if (waveNumber >= 4 && waveNumber % 2 === 0) {
+        enemies.push({
+            type: EnemyType.TANK,
+            count: Math.floor(1 + waveNumber / 5),
+            interval: 100,
+            hpMultiplier: difficultyMult * 1.5
+        });
+    }
+
+    // Add boss every 10 waves
+    if (waveNumber % 10 === 0) {
+        enemies.push({
+            type: EnemyType.BOSS,
+            count: 1,
+            interval: 200,
+            hpMultiplier: difficultyMult * 4
+        });
+    }
+
+    return {
+        briefing: `[OFFLINE MODE] Wave ${waveNumber} sequence initiated. Local sensors tracking incoming hostiles.`,
+        enemies
+    };
+};
+
 export const generateWave = async (waveNumber: number, difficultyMod: number): Promise<WaveComposition> => {
     const ai = getClient();
+    
+    // If no AI client, use fallback immediately
+    if (!ai) {
+        return generateFallbackWave(waveNumber);
+    }
     
     const prompt = `
       Generate a tower defense wave composition for Wave ${waveNumber}.
@@ -66,12 +121,7 @@ export const generateWave = async (waveNumber: number, difficultyMod: number): P
     } catch (error) {
         console.error("Failed to generate wave:", error);
         // Fallback wave if AI fails
-        return {
-            briefing: "Communication relay offline. Hostiles detected on radar.",
-            enemies: [
-                { type: EnemyType.grunt, count: 5 + waveNumber, interval: 60, hpMultiplier: 1 + (waveNumber * 0.1) }
-            ]
-        };
+        return generateFallbackWave(waveNumber);
     }
 };
 
@@ -82,6 +132,17 @@ export const getTacticalAdvice = async (
     towers: TowerEntity[]
 ): Promise<string> => {
     const ai = getClient();
+
+    if (!ai) {
+        const fallbackQuotes = [
+            "Tactical Uplink Offline. Rely on your training, Commander.",
+            "Long-range scanners are down. Visual confirmation only.",
+            "Enemy patterns suggest a frontal assault. Stay alert.",
+            "Resources are tight. Spend wisely.",
+            "Prioritize high-threat targets manually."
+        ];
+        return fallbackQuotes[wave % fallbackQuotes.length];
+    }
 
     const towerSummary = towers.reduce((acc, t) => {
         acc[t.type] = (acc[t.type] || 0) + 1;
@@ -110,6 +171,6 @@ export const getTacticalAdvice = async (
         });
         return response.text || "Systems compromised. No tactical data.";
     } catch (e) {
-        return "Tactical uplink offline.";
+        return "Tactical uplink unstable.";
     }
 };
