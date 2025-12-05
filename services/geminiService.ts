@@ -7,15 +7,18 @@ const MODEL_NAME = 'gemini-2.5-flash';
 // Safe access to process.env to prevent crashes in browsers/static hosts where process is undefined
 const getApiKey = (): string | undefined => {
     try {
-        if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+        // Explicitly check for 'process' variable existence before accessing it
+        // This prevents ReferenceError: process is not defined
+        if (typeof process !== 'undefined' && process && process.env && process.env.API_KEY) {
             const key = process.env.API_KEY;
             // Ensure key is not just whitespace or empty
-            if (key.trim().length > 0) {
+            if (typeof key === 'string' && key.trim().length > 0) {
                 return key;
             }
         }
     } catch (e) {
-        // Ignore errors if process is not defined
+        // Ignore errors if process is not defined or other access issues
+        console.warn("Environment check failed, defaulting to offline mode.");
     }
     return undefined;
 };

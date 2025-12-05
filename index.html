@@ -44,7 +44,19 @@
 </script>
 </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+    <div id="root">
+      <div style="height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; color: #0ea5e9;">
+        <h1 style="font-family: 'Orbitron', sans-serif; font-size: 24px; animation: pulse 2s infinite;">INITIALIZING NEURAL LINK...</h1>
+        <p style="margin-top: 10px; font-family: 'Rajdhani', sans-serif; color: #64748b;">Establish connection to game core.</p>
+      </div>
+    </div>
+    <!-- IMPORTANT: Use ./index.tsx for relative path support on GitHub Pages -->
+    <script type="module" src="./index.tsx"></script>
+    <style>
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+    </style>
   </body>
 </html>
