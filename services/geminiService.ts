@@ -7,8 +7,12 @@ const MODEL_NAME = 'gemini-2.5-flash';
 // Safe access to process.env to prevent crashes in browsers/static hosts where process is undefined
 const getApiKey = (): string | undefined => {
     try {
-        if (typeof process !== 'undefined' && process.env) {
-            return process.env.API_KEY;
+        if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+            const key = process.env.API_KEY;
+            // Ensure key is not just whitespace or empty
+            if (key.trim().length > 0) {
+                return key;
+            }
         }
     } catch (e) {
         // Ignore errors if process is not defined
@@ -73,7 +77,7 @@ const generateFallbackWave = (waveNumber: number): WaveComposition => {
     }
 
     return {
-        briefing: `[OFFLINE PROTOCOL] Uplink lost. Wave ${waveNumber} generated via local sensors.`,
+        briefing: `[SIMULATION MODE] Neural uplink offline. Wave ${waveNumber} generated via local combat algorithms.`,
         enemies
     };
 };
@@ -150,11 +154,11 @@ export const getTacticalAdvice = async (
 
     if (!ai) {
         const fallbackQuotes = [
-            "Tactical Uplink Offline. Rely on your training, Commander.",
-            "Long-range scanners are down. Visual confirmation only.",
-            "Enemy patterns suggest a frontal assault. Stay alert.",
-            "Resources are tight. Spend wisely.",
-            "Prioritize high-threat targets manually."
+            "Simulation Mode: Rely on standard combat protocols.",
+            "Neural Link Offline: Commander, proceed with manual targeting.",
+            "Pattern Analysis: Enemy density increasing.",
+            "Resource Alert: Optimize spending for maximum efficiency.",
+            "Local Sensors: Hostiles approaching from the vector."
         ];
         return fallbackQuotes[wave % fallbackQuotes.length];
     }

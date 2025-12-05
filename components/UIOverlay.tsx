@@ -32,9 +32,9 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                     <h1 className="text-xl text-cyan-400 font-bold uppercase tracking-widest">
                         Neon Defense
                     </h1>
-                    <div className={`flex items-center text-xs px-2 py-1 rounded border ${isOnline ? 'border-green-800 bg-green-900/30 text-green-400' : 'border-red-800 bg-red-900/30 text-red-400'}`}>
+                    <div className={`flex items-center text-xs px-2 py-1 rounded border ${isOnline ? 'border-green-800 bg-green-900/30 text-green-400' : 'border-amber-800 bg-amber-900/30 text-amber-400'}`}>
                         {isOnline ? <Wifi className="w-3 h-3 mr-1" /> : <WifiOff className="w-3 h-3 mr-1" />}
-                        {isOnline ? "ONLINE" : "OFFLINE"}
+                        {isOnline ? "ONLINE" : "SIMULATION"}
                     </div>
                 </div>
                 
