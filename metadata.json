@@ -1,0 +1,5 @@
+{
+  "name": "Neon Defense AI",
+  "description": "A sci-fi tower defense game where waves are procedurally generated and analyzed by Google Gemini AI.",
+  "requestFramePermissions": []
+}
